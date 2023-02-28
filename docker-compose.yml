@@ -1,0 +1,45 @@
+version: '3.9'
+
+networks:
+  laravel:
+      name: laravel
+
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: ./.docker/nginx/Dockerfile
+    ports:
+      - "80:80"
+    volumes:
+      - ./:/var/www/html:delegated
+    depends_on:
+      - php
+      - postgres
+    networks:
+      - laravel
+
+  postgres:
+    image: postgres:13.3
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: insta
+      POSTGRES_USER: insta
+      POSTGRES_PASSWORD: insta
+      POSTGRES_ROOT_PASSWORD: insta
+    networks:
+      - laravel
+
+  php:
+    build:
+      context: .
+      dockerfile: ./.docker/php/Dockerfile
+    volumes:
+      - ./:/var/www/html:delegated
+    networks:
+      - laravel
+    environment:
+        - PHP_IDE_CONFIG=${PHP_IDE_CONFIG}
+        - XDEBUG_CLIENT_HOST=${XDEBUG_CLIENT_HOST:-172.17.0.1}
